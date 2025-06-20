@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tony AI Chatbot</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            box-sizing: border-box;
+            background-color: #1a202c; /* Cor de fundo principal do app */
+        }
+        #root {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #333;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #666;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #888;
+        }
+        /* Styling for single-line code display */
+        .code-block code {
+            white-space: pre; /* Previne quebras de linha */
+            overflow-x: auto; /* Adiciona scroll horizontal se necessário */
+            display: block; /* Para que o overflow-x funcione */
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-900 text-white flex flex-col items-center p-4">
+
+    <!-- Welcome Dialog -->
+    <div id="welcome-dialog" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div class="bg-gradient-to-br from-purple-800 to-indigo-900 text-white p-8 rounded-xl shadow-2xl max-w-sm text-center transform transition-all duration-300 scale-100 opacity-100">
+            <h2 class="text-3xl font-bold mb-4 font-inter">Bem-vindo ao Tony AI!</h2>
+            <p class="text-lg font-inter">
+                Esse app foi criado por <span class="font-extrabold text-yellow-300">antonioff.1v6 ofc</span>
+            </p>
+            <button id="welcome-close-btn" class="mt-6 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold text-lg shadow-lg transform transition-transform duration-200 hover:scale-105">
+                Entendi!
+            </button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div class="bg-gradient-to-br from-blue-900 to-purple-900 text-white p-8 rounded-xl shadow-2xl max-w-lg w-full transform transition-all duration-300 scale-100 opacity-100">
+            <h2 class="text-3xl font-bold mb-6 text-center font-inter">Configurações do Tony AI</h2>
+            <label for="system-prompt-textarea" class="block text-xl font-semibold mb-3 font-inter">
+                Prompt do Sistema:
+            </label>
+            <textarea
+                id="system-prompt-textarea"
+                class="w-full p-4 bg-gray-800 border border-gray-700 rounded-lg text-white font-inter focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y min-h-[120px]"
+                placeholder="Defina o comportamento do Tony AI aqui..."
+            ></textarea>
+            <div class="mt-8 flex justify-end space-x-4">
+                <button id="settings-cancel-btn" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-full font-bold text-lg shadow-lg transform transition-transform duration-200 hover:scale-105 font-inter">
+                    Cancelar
+                </button>
+                <button id="settings-save-btn" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-full font-bold text-lg shadow-lg transform transition-transform duration-200 hover:scale-105 font-inter">
+                    Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chat Interface -->
+    <div class="w-full max-w-4xl bg-gray-800 rounded-2xl shadow-xl flex flex-col h-[calc(100vh-32px)] overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-700 to-indigo-700 p-5 rounded-t-2xl flex items-center justify-between shadow-md">
+            <h1 class="text-4xl font-extrabold text-white">Tony AI</h1>
+            <div class="flex space-x-3">
+                <!-- New Conversation Button -->
+                <button id="new-conversation-btn" class="p-3 bg-green-500 hover:bg-green-600 rounded-full shadow-lg transition-all duration-200 transform hover:scale-105" title="Nova Conversa">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                </button>
+                <!-- Settings Button -->
+                <button id="settings-btn" class="p-3 bg-purple-500 hover:bg-purple-600 rounded-full shadow-lg transition-all duration-200 transform hover:scale-105" title="Configurações">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.153.09.303.179.452.269z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat Messages Area -->
+        <div id="messages-container" class="flex-1 p-6 overflow-y-auto bg-gray-850">
+            <div id="initial-message" class="text-center text-gray-500 text-xl mt-20">
+                Envie uma mensagem para iniciar a conversa com Tony AI!
+            </div>
+            <div id="messages-end-ref"></div>
+        </div>
+
+        <!-- Uploaded Files Display Area -->
+        <div id="uploaded-files-display" class="p-4 bg-gray-750 border-t border-gray-700 flex flex-wrap gap-2 items-center hidden">
+            <span class="text-sm text-gray-400 mr-2 font-inter">Ficheiros Anexados:</span>
+            <!-- Files will be dynamically added here -->
+        </div>
+
+        <!-- Message Input Area -->
+        <div class="p-6 bg-gray-700 border-t border-gray-600 flex items-center rounded-b-2xl shadow-inner">
+            <!-- File Attach Button -->
+            <label for="file-upload" class="cursor-pointer p-3 bg-blue-500 hover:bg-blue-600 rounded-full mr-3 transition-all duration-200 transform hover:scale-105" title="Anexar Ficheiro">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5"></path></svg>
+                <input id="file-upload" type="file" multiple onchange="handleFileChange(event)" class="hidden" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.csv,.json">
+            </label>
+
+            <!-- Message Input Field -->
+            <input
+                type="text"
+                id="message-input"
+                class="flex-1 p-4 bg-gray-800 border border-gray-700 rounded-full text-white font-inter focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                placeholder="Digite a sua mensagem aqui..."
+            >
+            <!-- Send Button -->
+            <button id="send-button" class="ml-3 p-3 bg-blue-600 hover:bg-blue-700 rounded-full shadow-lg transition-all duration-200 transform hover:scale-105" title="Enviar Mensagem">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 12h14"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const welcomeDialog = document.getElementById('welcome-dialog');
+        const welcomeCloseBtn = document.getElementById('welcome-close-btn');
+        const settingsModal = document.getElementById('settings-modal');
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsCancelBtn = document.getElementById('settings-cancel-btn');
+        const settingsSaveBtn = document.getElementById('settings-save-btn');
+        const systemPromptTextarea = document.getElementById('system-prompt-textarea');
+        const messagesContainer = document.getElementById('messages-container');
+        const initialMessageDiv = document.getElementById('initial-message');
+        const messagesEndRef = document.getElementById('messages-end-ref');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const newConversationBtn = document.getElementById('new-conversation-btn');
+        const uploadedFilesDisplay = document.getElementById('uploaded-files-display');
+
+        // Application State
+        let messages = [];
+        let systemPrompt = "Você é Tony AI, um chatbot de IA avançado e útil.";
+        let isLoading = false;
+        let uploadedFiles = []; // Stores { name, size, type, data (base64 for images) }
+
+        // API Configuration
+        const API_KEY = "AIzaSyANVbX3jDpzpfHW740JXt-wqJKPbMWS-lI";
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+
+        // --- Utility Functions ---
+
+        // Scrolls to the latest message
+        const scrollToBottom = () => {
+            messagesEndRef.scrollIntoView({ behavior: "smooth" });
+        };
+
+        // Converts a file to a Base64 string
+        const fileToBase64 = (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+        };
+
+        // Minifies a code string by removing whitespace and comments
+        const minifyCodeString = (codeString) => {
+            let minified = codeString.replace(/\/\/.*/g, ''); // Remove single-line comments
+            minified = minified.replace(/\/\*[\s\S]*?\*\//g, ''); // Remove multi-line comments
+            minified = minified.replace(/(\r\n|\n|\r)/gm, ''); // Remove newlines
+            minified = minified.replace(/\s+/g, ' '); // Replace multiple spaces with a single space
+            minified = minified.trim(); // Trim leading/trailing spaces
+            return minified;
+        };
+
+        // Heuristics to check if text is likely code
+        const isLikelyCode = (text) => {
+            const codeKeywords = ['function', 'const', 'let', 'var', 'class', 'import', 'export', 'return', 'if', 'else', 'for', 'while', '<html', '<div', '<script', '{', '}', '[', ']'];
+            return codeKeywords.some(keyword => text.includes(keyword)) || text.includes(';') || (text.includes('(') && text.includes(')')) || (text.includes('{') && text.includes('}')) || (text.includes('<') && text.includes('>'));
+        };
+
+        // --- UI Rendering Functions ---
+
+        // Renders all messages to the chat container
+        const renderMessages = () => {
+            messagesContainer.innerHTML = ''; // Clear existing messages
+            if (messages.length === 0 && !isLoading) {
+                initialMessageDiv.style.display = 'block';
+                messagesContainer.appendChild(initialMessageDiv);
+            } else {
+                initialMessageDiv.style.display = 'none';
+                messages.forEach((msg, index) => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `flex mb-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`;
+
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = `max-w-[70%] p-4 rounded-xl shadow-lg ${
+                        msg.role === 'user'
+                            ? 'bg-blue-600 text-white rounded-br-none'
+                            : 'bg-gray-700 text-white rounded-bl-none'
+                    }`;
+
+                    msg.parts.forEach(part => {
+                        if (part.type === 'text') {
+                            const p = document.createElement('p');
+                            p.className = "break-words font-inter";
+                            p.textContent = part.content;
+                            contentDiv.appendChild(p);
+                        } else if (part.type === 'code') {
+                            const pre = document.createElement('pre');
+                            pre.className = "bg-gray-900 p-2 rounded-md overflow-x-auto text-sm my-2 font-mono code-block";
+                            const code = document.createElement('code');
+                            code.className = "text-green-300"; // For syntax highlighting (visual effect)
+                            code.textContent = part.content;
+                            pre.appendChild(code);
+                            contentDiv.appendChild(pre);
+                        } else if (part.inlineData && part.inlineData.mimeType.startsWith('image/')) {
+                            const imgDiv = document.createElement('div');
+                            imgDiv.className = "mt-2";
+                            const img = document.createElement('img');
+                            img.src = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                            img.alt = "Conteúdo de imagem";
+                            img.className = "max-w-xs md:max-w-sm lg:max-w-md h-auto rounded-lg shadow-md";
+                            imgDiv.appendChild(img);
+                            contentDiv.appendChild(imgDiv);
+                        }
+                    });
+                    messageDiv.appendChild(contentDiv);
+                    messagesContainer.appendChild(messageDiv);
+                });
+            }
+
+            // Add loading indicator if active
+            if (isLoading) {
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = "flex justify-start mb-4";
+                loadingDiv.innerHTML = `
+                    <div class="max-w-[70%] p-4 rounded-xl shadow-lg bg-gray-700 text-white rounded-bl-none">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-gray-400 rounded-full animate-bounce"></div>
+                            <div class="w-3 h-3 bg-gray-400 rounded-full animate-bounce delay-150"></div>
+                            <div class="w-3 h-3 bg-gray-400 rounded-full animate-bounce delay-300"></div>
+                            <span class="font-inter">Tony AI está a pensar...</span>
+                        </div>
+                    </div>
+                `;
+                messagesContainer.appendChild(loadingDiv);
+            }
+            scrollToBottom(); // Scroll to bottom after rendering
+        };
+
+        // Renders uploaded files display
+        const renderUploadedFiles = () => {
+            uploadedFilesDisplay.innerHTML = '<span class="text-sm text-gray-400 mr-2 font-inter">Ficheiros Anexados:</span>';
+            if (uploadedFiles.length > 0) {
+                uploadedFilesDisplay.classList.remove('hidden');
+                uploadedFiles.forEach((file, index) => {
+                    const fileItemDiv = document.createElement('div');
+                    fileItemDiv.className = "flex items-center bg-gray-700 rounded-md p-2 text-sm text-gray-300";
+
+                    if (file.type.startsWith('image/') && file.data) {
+                        const img = document.createElement('img');
+                        img.src = `data:${file.type};base64,${file.data}`;
+                        img.alt = "prévia";
+                        img.className = "w-8 h-8 object-cover rounded-sm mr-2";
+                        fileItemDiv.appendChild(img);
+                    }
+
+                    const span = document.createElement('span');
+                    span.className = "font-inter";
+                    span.textContent = `${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+                    fileItemDiv.appendChild(span);
+
+                    const removeButton = document.createElement('button');
+                    removeButton.className = "ml-2 text-red-400 hover:text-red-500";
+                    removeButton.textContent = "×";
+                    removeButton.onclick = () => {
+                        uploadedFiles = uploadedFiles.filter((_, i) => i !== index);
+                        renderUploadedFiles();
+                    };
+                    fileItemDiv.appendChild(removeButton);
+
+                    uploadedFilesDisplay.appendChild(fileItemDiv);
+                });
+            } else {
+                uploadedFilesDisplay.classList.add('hidden');
+            }
+        };
+
+        // --- Event Handlers ---
+
+        // Handles sending messages
+        const handleSendMessage = async () => {
+            const inputMessageText = messageInput.value.trim();
+            if (!inputMessageText && uploadedFiles.length === 0) return;
+
+            isLoading = true;
+            renderMessages(); // Update UI to show loading
+
+            const newUserMessageParts = [{ type: 'text', content: inputMessageText }];
+            const imageParts = [];
+
+            for (const file of uploadedFiles) {
+                if (file.type.startsWith('image/')) {
+                    if (file.data) {
+                        imageParts.push({
+                            inlineData: {
+                                mimeType: file.type,
+                                data: file.data
+                            }
+                        });
+                    }
+                } else {
+                    newUserMessageParts.push({ type: 'text', content: `[Ficheiro Anexado: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)]` });
+                }
+            }
+
+            if (imageParts.length > 0) {
+                newUserMessageParts.push(...imageParts);
+            }
+
+            // Add user message to state
+            messages.push({ role: 'user', parts: newUserMessageParts });
+            renderMessages();
+
+            // Clear input and files
+            messageInput.value = '';
+            uploadedFiles = [];
+            renderUploadedFiles();
+
+            // Prepare chat history for API (map to API-compatible format)
+            const chatHistoryForApi = messages.map(msg => ({
+                role: msg.role === 'user' ? 'user' : 'model',
+                // Map 'content' back to 'text' for API, retain inlineData
+                parts: msg.parts.map(p => p.inlineData ? { inlineData: p.inlineData } : { text: p.content })
+            }));
+
+            // Add the current user message to the history for this API call
+            chatHistoryForApi.push({
+                role: 'user',
+                parts: newUserMessageParts.map(p => p.inlineData ? { inlineData: p.inlineData } : { text: p.content })
+            });
+
+            try {
+                const payload = {
+                    contents: chatHistoryForApi,
+                    generationConfig: {
+                        temperature: 0.7,
+                        topP: 0.9,
+                        topK: 40
+                    }
+                };
+
+                if (systemPrompt.trim() !== '') {
+                    payload.systemInstruction = { parts: [{ text: systemPrompt }] };
+                }
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("API Error:", errorData);
+                    throw new Error(`API Error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+                }
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    let aiResponseText = result.candidates[0].content.parts[0].text;
+                    let responsePart = { type: 'text', content: aiResponseText };
+
+                    if (isLikelyCode(aiResponseText)) {
+                        aiResponseText = minifyCodeString(aiResponseText);
+                        responsePart = { type: 'code', content: aiResponseText };
+                    }
+                    messages.push({ role: 'model', parts: [responsePart] });
+                } else {
+                    messages.push({ role: 'model', parts: [{ type: 'text', content: "Desculpe, não consegui gerar uma resposta." }] });
+                }
+            } catch (error) {
+                console.error('Error calling Gemini API:', error);
+                messages.push({ role: 'model', parts: [{ type: 'text', content: `Ocorreu um erro: ${error.message}. Por favor, tente novamente.` }] });
+            } finally {
+                isLoading = false;
+                renderMessages(); // Re-render to hide loading and show AI response
+                sendButton.disabled = false; // Re-enable send button
+                messageInput.disabled = false; // Re-enable input field
+            }
+        };
+
+        // Handles file input change
+        window.handleFileChange = async (event) => { // Made global for onclick in HTML
+            const files = Array.from(event.target.files);
+            const maxFileSize = 890 * 1024 * 1024; // 890 MB
+
+            const newUploaded = [];
+            for (const file of files) {
+                if (file.size > maxFileSize) {
+                    console.warn(`Ficheiro "${file.name}" excede o limite de 890 MB.`);
+                    // Ideally, show a user-friendly message on UI
+                    continue;
+                }
+
+                let fileData = null;
+                if (file.type.startsWith('image/')) {
+                    fileData = await fileToBase64(file);
+                }
+                newUploaded.push({
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    data: fileData
+                });
+            }
+            uploadedFiles = [...uploadedFiles, ...newUploaded];
+            renderUploadedFiles();
+            event.target.value = null; // Clear input to allow re-selection of same file
+        };
+
+        // --- Event Listeners ---
+
+        // Welcome Dialog
+        welcomeCloseBtn.addEventListener('click', () => {
+            welcomeDialog.classList.add('hidden');
+        });
+
+        // Settings Modal
+        settingsBtn.addEventListener('click', () => {
+            systemPromptTextarea.value = systemPrompt; // Load current system prompt
+            settingsModal.classList.remove('hidden');
+        });
+
+        settingsCancelBtn.addEventListener('click', () => {
+            settingsModal.classList.add('hidden');
+        });
+
+        settingsSaveBtn.addEventListener('click', () => {
+            systemPrompt = systemPromptTextarea.value; // Save new system prompt
+            settingsModal.classList.add('hidden');
+        });
+
+        // Send Message
+        sendButton.addEventListener('click', handleSendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+            }
+        });
+
+        // New Conversation
+        newConversationBtn.addEventListener('click', () => {
+            messages = [];
+            uploadedFiles = [];
+            messageInput.value = '';
+            renderMessages();
+            renderUploadedFiles();
+        });
+
+        // Initial render
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMessages(); // Initial display of chat area
+            renderUploadedFiles(); // Initial display of file area (hidden if empty)
+        });
+    </script>
+</body>
+</html>
