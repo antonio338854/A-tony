@@ -1,0 +1,237 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #333;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: calc(100vh - 40px); /* Subtrai margens/padding se houver */
+    max-height: 700px; /* Limite máximo de altura */
+}
+
+header {
+    background-color: #007bff;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #0056b3;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.settings-icon {
+    cursor: pointer;
+    font-size: 1.5em;
+}
+
+.settings-panel {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #eee;
+    display: none; /* Escondido por padrão */
+}
+
+.settings-panel h2 {
+    margin-top: 0;
+    font-size: 1.2em;
+    color: #333;
+}
+
+.settings-panel label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.settings-panel textarea {
+    width: calc(100% - 22px); /* Ajuste para padding e borda */
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    resize: vertical;
+    font-family: sans-serif;
+}
+
+.settings-panel button {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.settings-panel button:hover {
+    background-color: #218838;
+}
+
+.api-key-info {
+    font-size: 0.9em;
+    color: #555;
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+}
+
+.api-key-info code {
+    background-color: #d1d1d1;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.chat-area {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+}
+
+.message {
+    padding: 10px 15px;
+    border-radius: 18px;
+    margin-bottom: 10px;
+    max-width: 80%;
+    line-height: 1.4;
+}
+
+.message.user {
+    background-color: #007bff;
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 5px;
+}
+
+.message.bot {
+    background-color: #e9ecef;
+    color: #333;
+    align-self: flex-start;
+    border-bottom-left-radius: 5px;
+}
+
+.message.error {
+    background-color: #ffdddd;
+    color: #d8000c;
+    align-self: flex-start;
+    font-weight: bold;
+}
+
+
+.message img, .message video {
+    max-width: 100%;
+    border-radius: 10px;
+    margin-top: 8px;
+}
+
+.input-area {
+    display: flex;
+    padding: 15px;
+    background-color: #fff;
+    border-top: 1px solid #eee;
+}
+
+.input-area input[type="text"] {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    margin-right: 10px;
+    font-size: 1em;
+}
+
+.chat-button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 20px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    font-size: 1em;
+    margin-left: 5px;
+    transition: background-color 0.2s ease;
+}
+
+.chat-button:hover {
+    background-color: #0056b3;
+}
+
+.chat-button.send-button {
+    background-color: #28a745;
+}
+
+.chat-button.send-button:hover {
+    background-color: #218838;
+}
+
+/* Estilo para o scrollbar */
+.chat-area::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chat-area::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.chat-area::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.chat-area::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    body {
+        align-items: flex-start; /* Alinha ao topo em telas menores */
+    }
+    .container {
+        width: 100%;
+        height: 100vh;
+        max-height: none;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    header h1 {
+        font-size: 1.3em;
+    }
+
+    .input-area {
+        padding: 10px;
+    }
+
+    .input-area input[type="text"] {
+        padding: 8px;
+        font-size: 0.9em;
+    }
+
+    .chat-button {
+        padding: 8px 12px;
+        font-size: 0.9em;
+    }
+}
